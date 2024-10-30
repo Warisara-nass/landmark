@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Page</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="../style1.css" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
+    <style>
+      /* Simple styling for the table and search input */
+      #searchInput {
+        margin: 20px 0;
+        padding: 10px;
+        font-size: 16px;
+        width: 100%;
+        max-width: 400px;
+        display: block;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .input-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      /* Styling for the fixed Home button */
+      .fixed-home-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .fixed-home-button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="navbar"></div>
+    <div>
+      <div class="input-area">
+        <h1 class="h1">This is the Search Page</h1>
+        <!-- Search input -->
+        <input
+          class="input"
+          type="text"
+          id="searchInput"
+          placeholder="Search..."
+          onkeyup="searchData()"
+        />
+      </div>
+      <!-- Div to display results -->
+      <div id="results"></div>
+      <!-- <button
+        class="fixed-home-button"
+        onclick="window.location.href='/frontend/index.html'"
+      >
+        Home
+      </button> -->
+    </div>
+    <div id="footer"></div>
+
+    <script>
+      let databaseData = [];
+
+      // Function to load the data from the server
+      function loadDatabaseData() {
+        fetch("http://localhost:8080/api/landmarks")
+          .then((response) => response.json())
+          .then((data) => {
+            databaseData = data.data; // Store the fetched data
+            displayData(databaseData); // Display all data initially
+          })
+          .catch((error) => console.error("Error loading data:", error));
+      }
+
+      // Function to display data in a table
+      function displayData(data) {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "";
+
+        if (data.length === 0) {
+          resultsDiv.innerHTML = "<p>No data found</p>";
+          return;
+        }
+
+        const table = document.createElement("table");
+        table.border = "1";
+        const headerRow = document.createElement("tr");
+
+        // Generate table headers from keys of the first row
+        Object.keys(data[0]).forEach((key) => {
+          const th = document.createElement("th");
+          th.innerText = key;
+          headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // Generate rows for each data entry
+        data.forEach((row) => {
+          const tr = document.createElement("tr");
+          Object.values(row).forEach((value) => {
+            const td = document.createElement("td");
+            td.innerText = value;
+            tr.appendChild(td);
+          });
+          table.appendChild(tr);
+        });
+
+        resultsDiv.appendChild(table);
+      }
+
+      // Function to filter data based on search input
+      function searchData() {
+        const query = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        const filteredData = databaseData.filter((row) => {
+          return Object.values(row).some((value) =>
+            String(value).toLowerCase().includes(query)
+          );
+        });
+        displayData(filteredData);
+      }
+
+      // Load and display data when the page loads
+      window.onload = function () {
+        loadDatabaseData();
+      };
+
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch("../Layout/navbar.html")
+          .then(response => response.text())
+          .then(data => {
+            document.getElementById("navbar").innerHTML = data;
+          })
+          .catch(error => console.error("Error loading navbar:", error));
+
+        fetch("../Layout/footer.html")
+          .then(response => response.text())
+          .then(data => {
+            document.getElementById("footer").innerHTML = data;
+          })
+          .catch(error => console.error("Error loading footer:", error));
+      });
+    </script>
+
+  </body>
+</html>
